@@ -1,0 +1,55 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  annotations:
+    kubevirt.io/latest-observed-api-version: v1
+    kubevirt.io/storage-observed-api-version: v1alpha3
+  name: decent-cat
+  namespace: image-building
+spec:
+  dataVolumeTemplates:
+  - metadata:
+      name: decent-cat-volume
+    spec:
+      sourceRef:
+        kind: DataSource
+        name: accenture-new
+        namespace: image-building
+      storage:
+        resources:
+          requests:
+            storage: 15Gi
+        storageClassName: ocs-storagecluster-ceph-rbd
+  instancetype:
+    kind: virtualmachineclusterinstancetype
+    name: n1.medium
+  preference:
+    kind: virtualmachineclusterpreference
+    name: rhel.9
+  running: true
+  template:
+    spec:
+      domain:
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: decent-cat-disk
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+        machine:
+          type: pc-q35-rhel9.2.0
+        resources: {}
+      volumes:
+      - dataVolume:
+          name: decent-cat-volume
+        name: decent-cat-disk
+      - cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            user: cloud-user
+            password: 5otq-rooo-x4q7
+            chpasswd: { expire: False }
+        name: cloudinitdisk
+
